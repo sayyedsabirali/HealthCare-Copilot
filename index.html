@@ -1,0 +1,1637 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>MediAI — Your Personal Health Copilot</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f5f3ef;
+    --surface: #ffffff;
+    --surface2: #f0ede8;
+    --border: rgba(0,0,0,0.1);
+    --border2: rgba(0,0,0,0.06);
+    --text: #1a1a1a;
+    --text2: #6b6b6b;
+    --text3: #9a9a9a;
+    --accent: #2d5a4e;
+    --accent-light: #e8f3ef;
+    --accent2: #c9622a;
+    --accent2-light: #fdf0e8;
+    --teal: #1d9e75;
+    --coral: #d85a30;
+    --amber: #ba7517;
+    --blue: #185fa5;
+    --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.04);
+    --radius: 16px;
+    --font: 'Sora', sans-serif;
+    --serif: 'DM Serif Display', serif;
+  }
+
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* ==================== AUTH ==================== */
+  #auth-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 2rem;
+  }
+
+  .auth-card {
+    background: var(--surface);
+    border-radius: 24px;
+    padding: 2.5rem;
+    width: 100%;
+    max-width: 420px;
+    box-shadow: var(--shadow);
+    border: 0.5px solid var(--border2);
+    animation: fadeUp 0.4s ease;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .auth-logo {
+    font-family: var(--serif);
+    font-size: 2.2rem;
+    color: var(--accent);
+    margin-bottom: 0.25rem;
+  }
+
+  .auth-logo span { color: var(--accent2); }
+
+  .auth-tagline {
+    color: var(--text2);
+    font-size: 13px;
+    margin-bottom: 2rem;
+  }
+
+  .auth-tabs {
+    display: flex;
+    gap: 0;
+    margin-bottom: 1.5rem;
+    border-radius: 10px;
+    background: var(--surface2);
+    padding: 4px;
+  }
+
+  .auth-tab {
+    flex: 1;
+    padding: 8px;
+    text-align: center;
+    cursor: pointer;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text2);
+    transition: all 0.2s;
+  }
+
+  .auth-tab.active {
+    background: var(--surface);
+    color: var(--text);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+  }
+
+  .field { margin-bottom: 1rem; }
+
+  .field label {
+    display: block;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text2);
+    margin-bottom: 6px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .field input,
+  .field select {
+    width: 100%;
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: 0.5px solid var(--border);
+    background: var(--surface2);
+    font-family: var(--font);
+    font-size: 14px;
+    color: var(--text);
+    outline: none;
+    transition: border 0.2s, background 0.2s;
+  }
+
+  .field input:focus,
+  .field select:focus {
+    border-color: var(--accent);
+    background: var(--surface);
+  }
+
+  .btn-primary {
+    width: 100%;
+    padding: 12px;
+    border-radius: 12px;
+    background: var(--accent);
+    color: #fff;
+    font-family: var(--font);
+    font-size: 14px;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-primary:hover { background: #234a3f; transform: translateY(-1px); }
+  .btn-primary:active { transform: translateY(0); }
+  .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+  .auth-error {
+    background: #fdf0e8;
+    color: var(--coral);
+    font-size: 12px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    margin-top: 0.75rem;
+    display: none;
+  }
+
+  /* ==================== APP SHELL ==================== */
+  #app { display: none; }
+
+  .layout {
+    display: flex;
+    min-height: 100vh;
+  }
+
+  /* ==================== SIDEBAR ==================== */
+  .sidebar {
+    width: 240px;
+    background: var(--surface);
+    border-right: 0.5px solid var(--border2);
+    display: flex;
+    flex-direction: column;
+    padding: 1.5rem 1rem;
+    position: fixed;
+    height: 100vh;
+    z-index: 10;
+    overflow-y: auto;
+  }
+
+  .logo {
+    font-family: var(--serif);
+    font-size: 1.5rem;
+    color: var(--accent);
+    padding: 0 0.5rem 1.5rem;
+    border-bottom: 0.5px solid var(--border2);
+  }
+
+  .logo span { color: var(--accent2); }
+
+  .nav {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-top: 1.5rem;
+    flex: 1;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text2);
+    transition: all 0.15s;
+    user-select: none;
+  }
+
+  .nav-item:hover { background: var(--surface2); color: var(--text); }
+  .nav-item.active { background: var(--accent-light); color: var(--accent); }
+
+  .nav-icon {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    opacity: 0.6;
+  }
+
+  .nav-item.active .nav-icon { opacity: 1; }
+
+  .sidebar-footer {
+    padding: 0.75rem 0.5rem;
+    border-top: 0.5px solid var(--border2);
+  }
+
+  .user-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--accent-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--accent);
+    flex-shrink: 0;
+  }
+
+  .user-email {
+    font-size: 11px;
+    color: var(--text2);
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .logout-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text3);
+    font-size: 11px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-family: var(--font);
+    transition: all 0.15s;
+    flex-shrink: 0;
+  }
+
+  .logout-btn:hover { color: var(--coral); background: var(--accent2-light); }
+
+  /* ==================== MAIN ==================== */
+  .main {
+    margin-left: 240px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+
+  .page {
+    display: none;
+    flex: 1;
+    padding: 2rem;
+    animation: fadeUp 0.3s ease;
+  }
+
+  .page.active { display: block; }
+
+  #chat-page {
+    display: none;
+    flex-direction: column;
+    height: 100vh;
+  }
+
+  #chat-page.active { display: flex; }
+
+  .page-header { margin-bottom: 2rem; }
+
+  .page-title {
+    font-family: var(--serif);
+    font-size: 1.75rem;
+    color: var(--text);
+  }
+
+  .page-sub {
+    color: var(--text2);
+    font-size: 13px;
+    margin-top: 4px;
+  }
+
+  /* ==================== DASHBOARD ==================== */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px;
+    margin-bottom: 2rem;
+  }
+
+  .stat-card {
+    background: var(--surface2);
+    border-radius: 14px;
+    padding: 1.25rem;
+    transition: transform 0.15s;
+  }
+
+  .stat-card:hover { transform: translateY(-2px); }
+
+  .stat-label {
+    font-size: 11px;
+    color: var(--text2);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .stat-value {
+    font-size: 2rem;
+    font-weight: 600;
+    margin-top: 4px;
+    color: var(--text);
+    font-family: var(--serif);
+  }
+
+  .stat-sub {
+    font-size: 12px;
+    color: var(--text3);
+    margin-top: 2px;
+  }
+
+  .quick-card {
+    background: var(--surface);
+    border-radius: 16px;
+    border: 0.5px solid var(--border2);
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .quick-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .quick-btn {
+    border: none;
+    border-radius: 10px;
+    padding: 10px 18px;
+    font-family: var(--font);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .quick-btn:hover { filter: brightness(0.95); transform: translateY(-1px); }
+
+  /* ==================== CHAT ==================== */
+  .chat-header {
+    padding: 1.25rem 2rem;
+    border-bottom: 0.5px solid var(--border2);
+    background: var(--surface);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .chat-title {
+    font-family: var(--serif);
+    font-size: 1.3rem;
+  }
+
+  .agent-badges-wrap {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    font-size: 12px;
+    color: var(--text3);
+  }
+
+  .badge {
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-weight: 500;
+  }
+
+  .badge-teal   { background: #e1f5ee; color: #0f6e56; }
+  .badge-amber  { background: #faeeda; color: #854f0b; }
+  .badge-coral  { background: #faece7; color: #993c1d; }
+  .badge-blue   { background: #e6f1fb; color: #185fa5; }
+  .badge-purple { background: #eeedfe; color: #534ab7; }
+
+  .chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1.5rem 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .msg {
+    display: flex;
+    gap: 12px;
+    max-width: 720px;
+  }
+
+  .msg.user {
+    flex-direction: row-reverse;
+    margin-left: auto;
+  }
+
+  .msg-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  .msg-avatar.ai   { background: var(--accent-light); color: var(--accent); }
+  .msg-avatar.user { background: var(--accent2-light); color: var(--accent2); }
+
+  .msg-bubble {
+    padding: 12px 16px;
+    border-radius: 16px;
+    font-size: 14px;
+    line-height: 1.65;
+    max-width: 560px;
+  }
+
+  .msg.ai   .msg-bubble { background: var(--surface); border: 0.5px solid var(--border2); border-bottom-left-radius: 4px; }
+  .msg.user .msg-bubble { background: var(--accent); color: #fff; border-bottom-right-radius: 4px; }
+
+  .msg-agents {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+  }
+
+  .chat-input-area {
+    padding: 1rem 2rem 1.5rem;
+    border-top: 0.5px solid var(--border2);
+    background: var(--surface);
+  }
+
+  .chat-input-box {
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+    background: var(--surface2);
+    border-radius: 16px;
+    padding: 10px 14px;
+    border: 0.5px solid var(--border);
+    transition: border 0.2s;
+  }
+
+  .chat-input-box:focus-within { border-color: var(--accent); }
+
+  .chat-input-box textarea {
+    flex: 1;
+    border: none;
+    background: transparent;
+    font-family: var(--font);
+    font-size: 14px;
+    resize: none;
+    outline: none;
+    color: var(--text);
+    max-height: 120px;
+    line-height: 1.5;
+  }
+
+  .chat-send-btn {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.2s;
+  }
+
+  .chat-send-btn:hover   { background: #234a3f; }
+  .chat-send-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* Typing indicator */
+  .typing-indicator { display: flex; gap: 4px; padding: 8px 4px; align-items: center; }
+
+  .typing-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--text3);
+    animation: bounce 1.2s infinite;
+  }
+
+  .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+  .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+  @keyframes bounce {
+    0%, 80%, 100% { transform: translateY(0); }
+    40%           { transform: translateY(-7px); }
+  }
+
+  /* ==================== UPLOAD ==================== */
+  .upload-zone {
+    border: 2px dashed var(--border);
+    border-radius: 16px;
+    padding: 2.5rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .upload-zone:hover {
+    border-color: var(--accent);
+    background: var(--accent-light);
+  }
+
+  .upload-zone input { display: none; }
+
+  .upload-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: var(--accent-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+  }
+
+  .upload-title { font-weight: 500; margin-bottom: 4px; }
+  .upload-sub   { font-size: 12px; color: var(--text2); }
+
+  .section-title {
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--text);
+  }
+
+  .result-card {
+    background: var(--surface);
+    border: 0.5px solid var(--border2);
+    border-radius: 12px;
+    padding: 1rem;
+    margin-top: 0.75rem;
+  }
+
+  .result-key { color: var(--text2); font-size: 12px; margin-bottom: 4px; }
+
+  pre {
+    background: var(--surface2);
+    border-radius: 10px;
+    padding: 12px;
+    font-size: 12px;
+    overflow-x: auto;
+    color: var(--text);
+    line-height: 1.6;
+    font-family: 'Courier New', monospace;
+  }
+
+  /* ==================== PATIENT ==================== */
+  .patient-card {
+    background: var(--surface);
+    border-radius: 16px;
+    border: 0.5px solid var(--border2);
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .patient-section-title {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text3);
+    font-weight: 500;
+    margin-bottom: 0.75rem;
+  }
+
+  .field-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+
+  .btn-secondary {
+    background: var(--surface2);
+    color: var(--text2);
+    border: 0.5px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 24px;
+    font-family: var(--font);
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .btn-secondary:hover { background: var(--border2); color: var(--text); }
+
+  .btn-group { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 1rem; }
+
+  /* Medical text records */
+  .med-record {
+    background: var(--surface);
+    border: 0.5px solid var(--border2);
+    border-radius: 16px;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1rem;
+    transition: box-shadow 0.2s;
+  }
+  .med-record:hover { box-shadow: var(--shadow); }
+  .med-record-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .med-record-date {
+    font-size: 11px;
+    color: var(--text3);
+    letter-spacing: 0.03em;
+  }
+  .med-kv-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 10px;
+    margin-bottom: 1rem;
+  }
+  .med-kv {
+    background: var(--surface2);
+    border-radius: 10px;
+    padding: 10px 12px;
+  }
+  .med-kv-key {
+    font-size: 11px;
+    color: var(--text3);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 4px;
+  }
+  .med-kv-val {
+    font-size: 13px;
+    color: var(--text);
+    font-weight: 500;
+  }
+  .med-raw-text {
+    font-size: 13px;
+    color: var(--text2);
+    background: var(--surface2);
+    border-radius: 10px;
+    padding: 10px 14px;
+    line-height: 1.6;
+    margin-top: 0.75rem;
+    display: none;
+  }
+  .toggle-raw {
+    background: none;
+    border: none;
+    font-family: var(--font);
+    font-size: 12px;
+    color: var(--accent);
+    cursor: pointer;
+    padding: 0;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+  .med-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 4px;
+  }
+  .med-pill {
+    background: var(--accent-light);
+    color: var(--accent);
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-weight: 500;
+  }
+  .med-pill.orange {
+    background: var(--accent2-light);
+    color: var(--accent2);
+  }
+  .loading-spinner {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--text3);
+    font-size: 13px;
+    padding: 1rem 0;
+  }
+  .spinner {
+    width: 18px; height: 18px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ==================== TOAST ==================== */
+  .toast {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    background: var(--text);
+    color: var(--surface);
+    padding: 12px 20px;
+    border-radius: 12px;
+    font-size: 13px;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: all 0.3s;
+    z-index: 1000;
+    pointer-events: none;
+    max-width: 320px;
+  }
+
+  .toast.show { opacity: 1; transform: translateY(0); }
+  .toast.success { background: var(--accent); }
+  .toast.error   { background: var(--coral); }
+
+  /* ==================== RESPONSIVE ==================== */
+  @media (max-width: 700px) {
+    .sidebar { display: none; }
+    .main { margin-left: 0; }
+    .field-row { grid-template-columns: 1fr; }
+    .chat-messages { padding: 1rem; }
+    .chat-input-area { padding: 0.75rem 1rem 1rem; }
+    .page { padding: 1rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ==================== AUTH SCREEN ==================== -->
+<div id="auth-screen">
+  <div class="auth-card">
+    <div class="auth-logo">Medi<span>AI</span></div>
+    <div class="auth-tagline">Your personal AI health copilot</div>
+
+    <div class="auth-tabs">
+      <div class="auth-tab active" onclick="switchTab('login')">Sign in</div>
+      <div class="auth-tab" onclick="switchTab('register')">Create account</div>
+    </div>
+
+    <div class="field">
+      <label>Email</label>
+      <input type="email" id="auth-email" placeholder="you@example.com" />
+    </div>
+
+    <div class="field">
+      <label>Password</label>
+      <input type="password" id="auth-password" placeholder="••••••••" />
+    </div>
+
+    <button class="btn-primary" id="auth-btn" onclick="handleAuth()">Continue</button>
+    <div class="auth-error" id="auth-error"></div>
+  </div>
+</div>
+
+
+<!-- ==================== MAIN APP ==================== -->
+<div id="app">
+  <div class="layout">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="logo">Medi<span>AI</span></div>
+
+      <nav class="nav">
+        <div class="nav-item active" data-page="dashboard" onclick="showPage('dashboard')">
+          <svg class="nav-icon" viewBox="0 0 20 20" fill="none">
+            <rect x="2" y="2" width="7" height="7" rx="2" fill="currentColor" opacity=".8"/>
+            <rect x="11" y="2" width="7" height="7" rx="2" fill="currentColor" opacity=".4"/>
+            <rect x="2" y="11" width="7" height="7" rx="2" fill="currentColor" opacity=".4"/>
+            <rect x="11" y="11" width="7" height="7" rx="2" fill="currentColor" opacity=".8"/>
+          </svg>
+          Dashboard
+        </div>
+
+        <div class="nav-item" data-page="chat" onclick="showPage('chat')">
+          <svg class="nav-icon" viewBox="0 0 20 20" fill="none">
+            <path d="M4 4h12a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H7l-4 3V6a2 2 0 0 1 2-2z" fill="currentColor" opacity=".7"/>
+          </svg>
+          AI Chat
+        </div>
+
+        <div class="nav-item" data-page="upload" onclick="showPage('upload')">
+          <svg class="nav-icon" viewBox="0 0 20 20" fill="none">
+            <path d="M10 2v11M6 7l4-5 4 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M4 14v2a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+          </svg>
+          Upload Data
+        </div>
+
+        <div class="nav-item" data-page="patient" onclick="showPage('patient')">
+          <svg class="nav-icon" viewBox="0 0 20 20" fill="none">
+            <circle cx="10" cy="7" r="4" fill="currentColor" opacity=".7"/>
+            <path d="M2 18c0-4 3.6-7 8-7s8 3 8 7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+          </svg>
+          Patient Profile
+        </div>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="user-info">
+          <div class="avatar" id="sidebar-avatar">?</div>
+          <div class="user-email" id="sidebar-email">Loading...</div>
+          <button class="logout-btn" onclick="logout()">Sign out</button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main content -->
+    <div class="main">
+
+      <!-- ===== DASHBOARD ===== -->
+      <div class="page active" id="dashboard-page">
+        <div class="page-header">
+          <div class="page-title">Good day, <span id="dash-name">there</span></div>
+          <div class="page-sub">Here's your health data overview</div>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-label">Text notes</div>
+            <div class="stat-value" id="count-text">—</div>
+            <div class="stat-sub">medical notes uploaded</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Documents</div>
+            <div class="stat-value" id="count-docs">—</div>
+            <div class="stat-sub">reports &amp; PDFs</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Images</div>
+            <div class="stat-value" id="count-imgs">—</div>
+            <div class="stat-sub">scans &amp; photos</div>
+          </div>
+        </div>
+
+        <div class="quick-card">
+          <div class="patient-section-title">Quick actions</div>
+          <div class="quick-actions">
+            <button class="quick-btn" style="background:var(--accent-light); color:var(--accent);" onclick="showPage('chat')">💬 Ask AI Copilot</button>
+            <button class="quick-btn" style="background:var(--accent2-light); color:var(--accent2);" onclick="showPage('upload')">📄 Upload a document</button>
+            <button class="quick-btn" style="background:var(--surface2); color:var(--text2);" onclick="showPage('patient')">👤 Update profile</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== CHAT ===== -->
+      <div id="chat-page" class="page" style="padding:0;">
+        <div class="chat-header">
+          <div class="chat-title">AI Health Copilot</div>
+          <div class="agent-badges-wrap" id="active-agents" style="display:none;">
+            <span style="font-size:11px; color:var(--text3);">Last used:</span>
+          </div>
+        </div>
+
+        <div class="chat-messages" id="chat-messages">
+          <div class="msg ai">
+            <div class="msg-avatar ai">AI</div>
+            <div>
+              <div class="msg-bubble">
+                Hello! I'm your AI Health Copilot powered by multiple specialist agents — risk analysis, drug guidance, diet planning, and medical research.<br><br>
+                How can I help you today?
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="chat-input-area">
+          <div class="chat-input-box">
+            <textarea
+              id="chat-input"
+              placeholder="Ask about symptoms, medications, diet..."
+              rows="1"
+              onkeydown="handleChatKey(event)"
+              oninput="autoResize(this)"
+            ></textarea>
+            <button class="chat-send-btn" id="send-btn" onclick="sendMessage()">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M14 8L2 2l3 6-3 6 12-6z" fill="white"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== UPLOAD ===== -->
+      <div class="page" id="upload-page">
+        <div class="page-header">
+          <div class="page-title">Upload Health Data</div>
+          <div class="page-sub">Add medical reports, images, or typed notes for AI analysis</div>
+        </div>
+
+        <div class="patient-card">
+          <div class="section-title">Upload a file</div>
+          <div class="upload-zone" onclick="document.getElementById('file-input').click()">
+            <input type="file" id="file-input" accept=".pdf,.png,.jpg,.jpeg" onchange="handleFileSelect(event)" />
+            <div class="upload-icon">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <path d="M10 2v11M6 7l4-5 4 5" stroke="#2d5a4e" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M4 14v2a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-2" stroke="#2d5a4e" stroke-width="1.6" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div class="upload-title" id="file-label">Click to choose a file</div>
+            <div class="upload-sub">PDF, PNG, JPG — medical reports or scan images</div>
+          </div>
+          <div style="margin-top:1rem;">
+            <button class="btn-primary" id="upload-file-btn" onclick="uploadFile()" disabled
+              style="width:auto; padding:10px 24px; opacity:0.4;">
+              Analyze file
+            </button>
+          </div>
+        </div>
+
+        <div class="patient-card">
+          <div class="section-title">Or type medical text</div>
+          <div class="field">
+            <textarea
+              id="text-input"
+              placeholder="e.g. My blood pressure is 140/90, glucose is 180 mg/dl, I have frequent headaches and mild chest pain..."
+              style="width:100%; padding:14px; border-radius:12px; border:0.5px solid var(--border); background:var(--surface2); font-family:var(--font); font-size:14px; color:var(--text); outline:none; min-height:120px; resize:vertical; transition:border 0.2s;"
+              onfocus="this.style.borderColor='var(--accent)'"
+              onblur="this.style.borderColor='var(--border)'"
+            ></textarea>
+          </div>
+          <button class="btn-primary" onclick="uploadText()" style="width:auto; padding:10px 24px;">Analyze text</button>
+        </div>
+
+        <div id="upload-results" style="display:none;">
+          <div class="section-title">AI-extracted structured data</div>
+          <div class="result-card">
+            <div class="result-key">Structured output (JSON)</div>
+            <pre id="result-json"></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== PATIENT PROFILE ===== -->
+      <div class="page" id="patient-page">
+        <div class="page-header">
+          <div class="page-title">Patient Profile</div>
+          <div class="page-sub">Your medical information used by the AI agents</div>
+        </div>
+
+        <div class="patient-card">
+          <div class="patient-section-title">Personal information</div>
+          <div class="field-row">
+            <div class="field">
+              <label>Full name</label>
+              <input type="text" id="p-name" placeholder="Your name" />
+            </div>
+            <div class="field">
+              <label>Age</label>
+              <input type="number" id="p-age" placeholder="e.g. 34" />
+            </div>
+          </div>
+          <div class="field">
+            <label>Gender</label>
+            <select id="p-gender">
+              <option value="">Select gender</option>
+              <option>Male</option>
+              <option>Female</option>
+              <option>Other</option>
+              <option>Prefer not to say</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="patient-card">
+          <div class="patient-section-title">Medical data</div>
+          <div class="field">
+            <label>Diagnosis / Conditions <span style="font-weight:400; text-transform:none;">(comma separated)</span></label>
+            <input type="text" id="p-diagnosis" placeholder="e.g. Hypertension, Diabetes Type 2, Asthma" />
+          </div>
+          <div class="field">
+            <label>Current Medications <span style="font-weight:400; text-transform:none;">(comma separated)</span></label>
+            <input type="text" id="p-medications" placeholder="e.g. Metformin 500mg, Lisinopril 10mg" />
+          </div>
+          <div class="field">
+            <label>Diet Recommendations</label>
+            <input type="text" id="p-diet" placeholder="e.g. Low sodium, High fiber, No processed sugar" />
+          </div>
+          <div class="field">
+            <label>Activity Restrictions</label>
+            <input type="text" id="p-activity" placeholder="e.g. No heavy lifting, 30 min walk daily" />
+          </div>
+          <div class="field">
+            <label>Doctor Instructions</label>
+            <input type="text" id="p-instructions" placeholder="e.g. Check BP twice daily, follow-up in 2 weeks" />
+          </div>
+        </div>
+
+        <div class="btn-group">
+          <button class="btn-primary" onclick="savePatient()" style="width:auto; padding:12px 28px;">Save profile</button>
+          <button class="btn-secondary" onclick="loadPatient()">Load from MongoDB</button>
+        </div>
+
+        <!-- ===== MEDICAL TEXTS FROM MONGODB ===== -->
+        <div id="medical-texts-section" style="margin-top:2rem; display:none;">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1rem;">
+            <div class="section-title" style="margin:0;">Uploaded Medical Records</div>
+            <span id="texts-count-badge" class="badge badge-teal"></span>
+          </div>
+          <div id="medical-texts-list"></div>
+        </div>
+      </div>
+
+    </div><!-- /.main -->
+  </div><!-- /.layout -->
+</div><!-- /#app -->
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ==============================
+// CONFIG
+// ==============================
+const BASE = 'http://localhost:8000'; // Change this to your backend URL
+
+// ==============================
+// STATE
+// ==============================
+let token     = localStorage.getItem('medi_token') || null;
+let userEmail = localStorage.getItem('medi_email') || '';
+let authMode  = 'login';
+let selectedFile = null;
+
+// ==============================
+// UTILS
+// ==============================
+function api(path, opts = {}) {
+  const headers = { 'Content-Type': 'application/json', ...(opts.headers || {}) };
+  if (token) headers['Authorization'] = 'Bearer ' + token;
+  return fetch(BASE + path, { ...opts, headers });
+}
+
+function apiForm(path, formData) {
+  return fetch(BASE + path, {
+    method: 'POST',
+    headers: { 'Authorization': 'Bearer ' + token },
+    body: formData
+  });
+}
+
+function showToast(msg, type = '') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (type ? ' ' + type : '');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => { t.className = 'toast'; }, 3000);
+}
+
+function splitCSV(str) {
+  return str.split(',').map(s => s.trim()).filter(Boolean);
+}
+
+// ==============================
+// AUTH
+// ==============================
+function switchTab(mode) {
+  authMode = mode;
+  document.querySelectorAll('.auth-tab').forEach((el, i) => {
+    el.classList.toggle('active', (i === 0 && mode === 'login') || (i === 1 && mode === 'register'));
+  });
+  document.getElementById('auth-btn').textContent = mode === 'login' ? 'Sign in' : 'Create account';
+}
+
+async function handleAuth() {
+  const email    = document.getElementById('auth-email').value.trim();
+  const password = document.getElementById('auth-password').value;
+  const errEl    = document.getElementById('auth-error');
+  errEl.style.display = 'none';
+
+  if (!email || !password) {
+    errEl.textContent = 'Please fill in all fields.';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  const btn = document.getElementById('auth-btn');
+  btn.disabled = true;
+  btn.textContent = 'Please wait...';
+
+  const endpoint = authMode === 'login' ? '/auth/login' : '/auth/register';
+
+  try {
+    const res  = await api(endpoint, { method: 'POST', body: JSON.stringify({ email, password }) });
+    const data = await res.json();
+
+    if (!res.ok) {
+      errEl.textContent = data.detail || 'Something went wrong.';
+      errEl.style.display = 'block';
+      return;
+    }
+
+    if (authMode === 'register') {
+      showToast('Account created! Please sign in.', 'success');
+      switchTab('login');
+      return;
+    }
+
+    token     = data.access_token;
+    userEmail = email;
+    localStorage.setItem('medi_token', token);
+    localStorage.setItem('medi_email', email);
+    enterApp();
+
+  } catch (e) {
+    errEl.textContent = 'Cannot connect to server. Make sure the backend is running on ' + BASE;
+    errEl.style.display = 'block';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = authMode === 'login' ? 'Sign in' : 'Create account';
+  }
+}
+
+function enterApp() {
+  document.getElementById('auth-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+
+  const initials = (userEmail[0] || '?').toUpperCase();
+  document.getElementById('sidebar-avatar').textContent = initials;
+  document.getElementById('sidebar-email').textContent  = userEmail;
+
+  const name = userEmail.split('@')[0];
+  document.getElementById('dash-name').textContent = name;
+
+  showPage('dashboard');
+  loadCounts();
+}
+
+function logout() {
+  token = null; userEmail = '';
+  localStorage.removeItem('medi_token');
+  localStorage.removeItem('medi_email');
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('auth-screen').style.display = 'flex';
+}
+
+// ==============================
+// NAVIGATION
+// ==============================
+function showPage(name) {
+  // Update nav items
+  document.querySelectorAll('.nav-item').forEach(el => {
+    el.classList.toggle('active', el.dataset.page === name);
+  });
+
+  // Hide all pages
+  document.querySelectorAll('.page').forEach(p => {
+    p.classList.remove('active');
+    p.style.display = 'none';
+  });
+
+  // Show target
+  const pg = document.getElementById(name + '-page');
+  if (!pg) return;
+
+  if (name === 'chat') {
+    pg.style.display = 'flex';
+  } else {
+    pg.style.display = 'block';
+  }
+  pg.classList.add('active');
+
+  if (name === 'dashboard') loadCounts();
+  if (name === 'patient')   loadPatient();
+}
+
+// ==============================
+// DASHBOARD
+// ==============================
+async function loadCounts() {
+  try {
+    const res = await api('/upload/counts');
+    if (res.ok) {
+      const d = await res.json();
+      document.getElementById('count-text').textContent = d.text     ?? 0;
+      document.getElementById('count-docs').textContent = d.documents ?? 0;
+      document.getElementById('count-imgs').textContent = d.images   ?? 0;
+    }
+  } catch (e) { /* silent fail */ }
+}
+
+// ==============================
+// CHAT
+// ==============================
+function handleChatKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+}
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+}
+
+const agentColors = {
+  RiskAgent:            'coral',
+  DrugAgent:            'teal',
+  DietAgent:            'teal',
+  MedicalResearchAgent: 'blue',
+  GuardrailAgent:       'amber'
+};
+
+function appendMsg(role, text, agents = []) {
+  const wrap = document.getElementById('chat-messages');
+  const div  = document.createElement('div');
+  div.className = 'msg ' + role;
+
+  const avText = role === 'user' ? 'You' : 'AI';
+
+  let agentHtml = '';
+  if (agents.length) {
+    const badges = agents.map(a => {
+      const c = agentColors[a] || 'purple';
+      return `<span class="badge badge-${c}">${a}</span>`;
+    }).join('');
+    agentHtml = `<div class="msg-agents">${badges}</div>`;
+  }
+
+  const safeText = text.replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>');
+
+  div.innerHTML = `
+    <div class="msg-avatar ${role}">${avText}</div>
+    <div>
+      <div class="msg-bubble">${safeText}</div>
+      ${agentHtml}
+    </div>`;
+
+  wrap.appendChild(div);
+  wrap.scrollTop = wrap.scrollHeight;
+}
+
+function showTyping() {
+  const wrap = document.getElementById('chat-messages');
+  const div  = document.createElement('div');
+  div.className = 'msg ai';
+  div.id = 'typing-msg';
+  div.innerHTML = `
+    <div class="msg-avatar ai">AI</div>
+    <div>
+      <div class="msg-bubble" style="padding:10px 16px;">
+        <div class="typing-indicator">
+          <div class="typing-dot"></div>
+          <div class="typing-dot"></div>
+          <div class="typing-dot"></div>
+        </div>
+      </div>
+    </div>`;
+  wrap.appendChild(div);
+  wrap.scrollTop = wrap.scrollHeight;
+}
+
+function removeTyping() {
+  document.getElementById('typing-msg')?.remove();
+}
+
+async function sendMessage() {
+  const inp = document.getElementById('chat-input');
+  const q   = inp.value.trim();
+  if (!q) return;
+
+  inp.value = '';
+  inp.style.height = 'auto';
+  document.getElementById('send-btn').disabled = true;
+
+  appendMsg('user', q);
+  showTyping();
+
+  try {
+    const res = await api('/chat', {
+      method: 'POST',
+      body: JSON.stringify({ question: q })
+    });
+    removeTyping();
+
+    if (res.ok) {
+      const d = await res.json();
+      appendMsg('ai', d.response || '(no response)', d.agents || []);
+
+      // Update header badges
+      if (d.agents?.length) {
+        const badgesEl = document.getElementById('active-agents');
+        badgesEl.style.display = 'flex';
+        const badges = d.agents.map(a => {
+          const c = agentColors[a] || 'purple';
+          return `<span class="badge badge-${c}">${a}</span>`;
+        }).join('');
+        badgesEl.innerHTML = `<span style="font-size:11px; color:var(--text3);">Last used:</span>${badges}`;
+      }
+    } else {
+      const e = await res.json();
+      appendMsg('ai', 'Error: ' + (e.detail || 'Unknown error'));
+    }
+  } catch (e) {
+    removeTyping();
+    appendMsg('ai', 'Could not connect to the server. Please check your backend connection.');
+  }
+
+  document.getElementById('send-btn').disabled = false;
+}
+
+// ==============================
+// UPLOAD
+// ==============================
+function handleFileSelect(e) {
+  selectedFile = e.target.files[0];
+  if (selectedFile) {
+    document.getElementById('file-label').textContent = selectedFile.name;
+    const btn = document.getElementById('upload-file-btn');
+    btn.disabled = false;
+    btn.style.opacity = '1';
+  }
+}
+
+async function uploadFile() {
+  if (!selectedFile) return;
+  const fd = new FormData();
+  fd.append('file', selectedFile);
+
+  const btn = document.getElementById('upload-file-btn');
+  btn.disabled = true;
+  btn.textContent = 'Analyzing...';
+  showToast('Uploading and analyzing file...');
+
+  try {
+    const res = await apiForm('/upload/medical-report', fd);
+    const d   = await res.json();
+
+    if (res.ok) {
+      document.getElementById('upload-results').style.display = 'block';
+      document.getElementById('result-json').textContent = JSON.stringify(d.structured_data, null, 2);
+      showToast('File analyzed successfully!', 'success');
+    } else {
+      showToast(d.detail || 'Upload failed', 'error');
+    }
+  } catch (e) {
+    showToast('Connection error', 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Analyze file';
+  }
+}
+
+async function uploadText() {
+  const text = document.getElementById('text-input').value.trim();
+  if (!text) { showToast('Please enter some text first.', 'error'); return; }
+
+  showToast('Analyzing text with AI...');
+
+  try {
+    const res = await api('/upload/text', {
+      method: 'POST',
+      body: JSON.stringify({ text })
+    });
+    const d = await res.json();
+
+    if (res.ok) {
+      document.getElementById('upload-results').style.display = 'block';
+      document.getElementById('result-json').textContent = JSON.stringify(d.structured_data, null, 2);
+      showToast('Text analyzed!', 'success');
+    } else {
+      showToast(d.detail || 'Analysis failed', 'error');
+    }
+  } catch (e) {
+    showToast('Connection error', 'error');
+  }
+}
+
+// ==============================
+// PATIENT PROFILE
+// ==============================
+async function savePatient() {
+  const personalData = {
+    patient_info: {
+      name:   document.getElementById('p-name').value.trim(),
+      age:    document.getElementById('p-age').value,
+      gender: document.getElementById('p-gender').value
+    }
+  };
+
+  const medicalData = {
+    diagnosis:             splitCSV(document.getElementById('p-diagnosis').value),
+    medications:           splitCSV(document.getElementById('p-medications').value),
+    diet_recommendations:  splitCSV(document.getElementById('p-diet').value),
+    activity_restrictions: splitCSV(document.getElementById('p-activity').value),
+    doctor_instructions:   splitCSV(document.getElementById('p-instructions').value)
+  };
+
+  try {
+    // Step 1 — upsert personal info (backend uses JWT patient_id automatically)
+    let res = await api('/patients/', {
+      method: 'POST',
+      body: JSON.stringify(personalData)
+    });
+
+    if (!res.ok) {
+      const e = await res.json();
+      showToast('Error: ' + (e.detail || 'Could not save profile'), 'error');
+      return;
+    }
+
+    // Step 2 — update medical data using /me endpoint (no patient_id in URL needed)
+    res = await api('/patients/me/medical-data', {
+      method: 'PUT',
+      body: JSON.stringify(medicalData)
+    });
+
+    if (res.ok) {
+      showToast('Profile saved! AI agents will now use this context.', 'success');
+    } else {
+      showToast('Personal info saved, but medical data update failed.', 'error');
+    }
+  } catch (e) {
+    showToast('Connection error — is the backend running?', 'error');
+  }
+}
+
+// ──────────────────────────────────────────────
+// Helper: parse structured_data (handles raw JSON
+// wrapped in markdown code fences by the LLM)
+// ──────────────────────────────────────────────
+function parseStructured(raw) {
+  if (!raw) return null;
+  if (typeof raw === 'object' && !raw.raw_output) return raw;
+
+  // LLM sometimes returns { raw_output: "```json\n{...}\n```" }
+  let str = raw.raw_output || JSON.stringify(raw);
+  str = str.replace(/```(?:json)?/gi, '').replace(/```/g, '').trim();
+  try { return JSON.parse(str); } catch (e) { return null; }
+}
+
+// Render one value — array → pills, string → plain text
+function renderVal(val, orange = false) {
+  if (Array.isArray(val)) {
+    if (!val.length) return '<span style="color:var(--text3)">—</span>';
+    const pillClass = orange ? 'med-pill orange' : 'med-pill';
+    // val items can be strings OR objects (e.g. medications)
+    return '<div class="med-pills">' +
+      val.map(v => {
+        const label = typeof v === 'object' ? Object.values(v).join(' ') : v;
+        return `<span class="${pillClass}">${label}</span>`;
+      }).join('') +
+    '</div>';
+  }
+  return `<span>${val ?? '—'}</span>`;
+}
+
+function renderMedicalText(doc, index) {
+  const sd      = parseStructured(doc.structured_data);
+  const dateStr = doc.created_at
+    ? new Date(doc.created_at).toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' })
+    : '';
+
+  // Build key-value cards from structured data
+  let kvHtml = '';
+  if (sd) {
+    const skipKeys = ['raw_output'];
+    Object.entries(sd).forEach(([k, v]) => {
+      if (skipKeys.includes(k)) return;
+      const label = k.replace(/_/g, ' ');
+      const isArr = Array.isArray(v);
+      kvHtml += `
+        <div class="med-kv">
+          <div class="med-kv-key">${label}</div>
+          <div class="med-kv-val">
+            ${isArr ? renderVal(v, k.includes('medication') || k.includes('drug')) : (v ?? '—')}
+          </div>
+        </div>`;
+    });
+  } else {
+    kvHtml = `<div style="color:var(--text3); font-size:13px;">Could not parse structured data.</div>`;
+  }
+
+  const rawSafe = (doc.raw_text || '').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+  return `
+    <div class="med-record">
+      <div class="med-record-header">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span class="badge badge-teal">Record #${index + 1}</span>
+          <span class="badge badge-blue">${doc.type || 'text'}</span>
+        </div>
+        <span class="med-record-date">${dateStr}</span>
+      </div>
+
+      <div class="med-kv-grid">${kvHtml}</div>
+
+      ${rawSafe ? `
+        <button class="toggle-raw" onclick="toggleRaw(${index})">Show original text</button>
+        <div class="med-raw-text" id="raw-${index}">${rawSafe}</div>
+      ` : ''}
+    </div>`;
+}
+
+function toggleRaw(index) {
+  const el  = document.getElementById('raw-' + index);
+  const btn = el.previousElementSibling;
+  const open = el.style.display === 'block';
+  el.style.display  = open ? 'none' : 'block';
+  btn.textContent   = open ? 'Show original text' : 'Hide original text';
+}
+
+async function loadPatient() {
+  const section = document.getElementById('medical-texts-section');
+  const listEl  = document.getElementById('medical-texts-list');
+  const badgeEl = document.getElementById('texts-count-badge');
+
+  section.style.display = 'block';
+  listEl.innerHTML = '<div class="loading-spinner"><div class="spinner"></div>Loading from MongoDB...</div>';
+
+  // ── 1. Load profile form fields from /patients/me ────────────────
+  try {
+    const profileRes = await api('/patients/me');
+    if (profileRes.ok) {
+      const p = await profileRes.json();
+      if (p && Object.keys(p).length) {
+        const pi = p.patient_info || {};
+        document.getElementById('p-name').value    = pi.name   || '';
+        document.getElementById('p-age').value     = pi.age    || '';
+        document.getElementById('p-gender').value  = pi.gender || '';
+
+        document.getElementById('p-diagnosis').value    = (p.diagnosis            || []).join(', ');
+        document.getElementById('p-medications').value  = (p.medications          || []).join(', ');
+        document.getElementById('p-diet').value         = (p.diet_recommendations || []).join(', ');
+        document.getElementById('p-activity').value     = (p.activity_restrictions|| []).join(', ');
+        document.getElementById('p-instructions').value = (p.doctor_instructions  || []).join(', ');
+      }
+    }
+  } catch (e) { /* profile load failed silently */ }
+
+  // ── 2. Load medical_texts records ────────────────────────────────
+  try {
+    const res = await api('/upload/my-texts');
+
+    if (!res.ok) {
+      const e = await res.json();
+      listEl.innerHTML = `<div style="color:var(--coral); font-size:13px;">Error: ${e.detail || 'Could not load records'}</div>`;
+      return;
+    }
+
+    const data  = await res.json();
+    const texts = data.texts || [];
+
+    badgeEl.textContent = texts.length + ' record' + (texts.length !== 1 ? 's' : '');
+
+    if (!texts.length) {
+      listEl.innerHTML = '<div style="color:var(--text3); font-size:13px; padding:1rem 0;">No medical texts uploaded yet. Go to Upload Data to add some.</div>';
+      return;
+    }
+
+    listEl.innerHTML = texts.map((doc, i) => renderMedicalText(doc, i)).join('');
+    showToast('Profile + ' + texts.length + ' record(s) loaded', 'success');
+
+  } catch (e) {
+    listEl.innerHTML = '<div style="color:var(--coral); font-size:13px;">Connection error — is the backend running?</div>';
+  }
+}
+
+// ==============================
+// INIT
+// ==============================
+document.getElementById('auth-password').addEventListener('keydown', e => {
+  if (e.key === 'Enter') handleAuth();
+});
+
+if (token) {
+  enterApp();
+} else {
+  document.getElementById('auth-screen').style.display = 'flex';
+}
+</script>
+
+</body>
+</html>
