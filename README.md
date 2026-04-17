@@ -17,9 +17,11 @@ This repo is centered on a backend-first AI engine, not just a frontend demo. It
 1. [Getting Started](#getting-started)
 2. [What is this project?](#what-is-this-project)
 3. [Core Components](#core-components)
-4. [How it works](#how-it-works)
-5. [Data Model](#data-model)
-6. [Environment Variables](#environment-variables)
+4. [Agents & Tools](#agents--tools)
+5. [Skills](#skills)
+6. [How it works](#how-it-works)
+7. [Data Model](#data-model)
+8. [Environment Variables](#environment-variables)
 
 ---
 
@@ -72,6 +74,37 @@ PatientCare Copilot is a patient-aware AI assistant that uses uploaded medical r
 - `tools/` — data lookups and external knowledge sources.
 - `database/` — MongoDB persistence for patients, uploads, and medical text.
 - `memory/` — stores conversational memory and summaries.
+
+---
+
+## Agents & Tools
+
+- `DietAgent` — nutrition and meal guidance based on patient history.
+- `DrugAgent` — medication questions, interactions, and side effect checks.
+- `RiskAgent` — symptom risk assessment and triage recommendations.
+- `MedicalResearchAgent` — evidence-based clinical knowledge and guideline lookup.
+- `AssistantAgent` — fallback health advice and general consumer response.
+- `GuardrailAgent` — safety checks for treatment-change or prescription requests.
+
+- `tools/nutrition_tool.py` — USDA food and nutrition lookup.
+- `tools/drug_interaction_tool.py` — medication label and interaction lookup.
+- `tools/symptom_checker_tool.py` — symptom-to-condition search.
+- `tools/medical_guideline_tool.py` — guideline and clinical topic lookup.
+
+---
+
+## Skills Demonstrated
+
+- Generative AI
+- LangGraph
+- MongoDB
+- Prompt engineering
+- Context building
+- Medical entity extraction
+- Multi-agent orchestration
+- Tool integration
+- Safety guardrails
+- Conversational memory
 
 ---
 
