@@ -1,11 +1,14 @@
-# HealthCare Copilot
+# PatientCare Copilot
 
-AI Health Copilot is a health AI engine built around a LangGraph-driven agent pipeline, medical context building, and structured clinical ingest. The repository includes:
+PatientCare Copilot is a personalized health AI assistant built to understand each patient from their own medical data. Users can register, upload clinical files such as discharge summaries and medical notes, and the system stores that data in MongoDB. When a patient asks a question, the engine answers using the patient's profile, upload history, and conversation memory.
+
+This repo is centered on a backend-first AI engine, not just a frontend demo. It includes:
 
 - A core AI engine in `backend/langgraph/` that routes questions through specialized health agents.
-- `backend/core/` modules for context extraction, patient reasoning, tool integrations, and LLM orchestration.
-- MongoDB-backed patient profiles, document ingestion, and memory-aware conversational context.
-- A minimal browser frontend in `index.html` and an optional Streamlit entrypoint in `frontend.py`, but the main value is the agent/tool core.
+- `backend/core/` modules for patient context building, medical entity extraction, reasoning, and LLM orchestration.
+- MongoDB-backed patient profiles, document uploads, and structured medical history.
+- `memory/` for chat memory, summaries, and personalized conversational context.
+- A simple browser frontend in `index.html` and an optional Streamlit entrypoint in `frontend.py` for accessing the backend.
 
 ---
 
@@ -63,14 +66,15 @@ Open `index.html` in your browser and use the app UI. The frontend expects the b
 
 ## What is this project?
 
-HealthCare Copilot is not just a frontend or an API. It is an AI reasoning engine for medical conversations.
+PatientCare Copilot is more than a simple web UI or generic chatbot. It is a patient-aware AI reasoning system that:
 
-- It reads patient data and document inputs.
-- It builds a clinical context around the patient.
-- It routes questions to the right medical agents.
-- It runs those agents together and merges their answers.
+- lets users register and upload medical records, discharge summaries, and clinical notes,
+- stores and retrieves patient data from MongoDB,
+- builds a personalized medical context for each patient,
+- routes questions to the right specialist agents,
+- combines multiple expert responses into one safe and coherent answer.
 
-This project is mainly about the agent workflow itself, not the web UI.
+The browser UI is a lightweight access layer. The main value is the backend engine that answers health questions using patient-specific data and multi-agent reasoning.
 
 ---
 
@@ -316,5 +320,5 @@ OPENAI_API_KEY=sk-xxxx
 USDA_API_KEY=your-usda-key
 LLM_PROVIDER=openai
 LANGSMITH_API_KEY=your-langsmith-key
-LANGSMITH_PROJECT=healthcare-copilot
+LANGSMITH_PROJECT=patientcare-copilot
 ```
