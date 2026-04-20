@@ -158,3 +158,12 @@ LLM_PROVIDER=openai
 LANGSMITH_API_KEY=your-langsmith-key
 LANGSMITH_PROJECT=patientcare-copilot
 ```
+
+
+## 📎 Attachments
+
+### 🎥 Demo Video
+https://drive.google.com/file/d/1JzVY5G2DMQ-nKqbQmzwK0bU1M2mO58Iz/view?usp=drive_link  
+
+### 📄 Workflow Report
+https://drive.google.com/file/d/1Aookmiy4ASHZEEMVDdlM0gPcO_HDGMxy/view?usp=drive_link  
